@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}DevFlow AI - Multi-Agent Network{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column gap-4">
+  
+  <div>
+    <h3 class="mb-1 fw-bold text-dark">Specialized AI Agents</h3>
+    <p class="text-secondary mb-0 small">Autonomous agent network where each agent handles a dedicated phase of the DevOps lifecycle.</p>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-md-6 col-lg-4">
+      <div class="card-clean h-100">
+        <div class="card-clean-header">
+          <span class="fw-bold text-dark">Intent Agent</span>
+          <span class="badge-pill green"><span class="pulse-dot" style="width:5px; height:5px;"></span> Online</span>
+        </div>
+        <div class="small text-secondary mb-3">Parses natural language intent, decomposes goals, and extracts target components and endpoints.</div>
+        <div class="border-top pt-2 small text-muted">
+          <div><strong>Schema:</strong> IntentOutput</div>
+          <div><strong>Role:</strong> Intent Parser</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+      <div class="card-clean h-100">
+        <div class="card-clean-header">
+          <span class="fw-bold text-dark">Troubleshooting Agent</span>
+          <span class="badge-pill green"><span class="pulse-dot" style="width:5px; height:5px;"></span> Online</span>
+        </div>
+        <div class="small text-secondary mb-3">Synthesizes RAG vector context and error traces to rank root causes and extract empirical evidence.</div>
+        <div class="border-top pt-2 small text-muted">
+          <div><strong>Schema:</strong> TroubleshootingOutput</div>
+          <div><strong>Role:</strong> Root Cause Analyzer</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+      <div class="card-clean h-100">
+        <div class="card-clean-header">
+          <span class="fw-bold text-dark">Debugging Agent</span>
+          <span class="badge-pill green"><span class="pulse-dot" style="width:5px; height:5px;"></span> Online</span>
+        </div>
+        <div class="small text-secondary mb-3">Synthesizes minimal non-breaking patches and unified diffs strictly within temporary sandboxes.</div>
+        <div class="border-top pt-2 small text-muted">
+          <div><strong>Schema:</strong> DebuggingOutput</div>
+          <div><strong>Role:</strong> Code Mutator</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+      <div class="card-clean h-100">
+        <div class="card-clean-header">
+          <span class="fw-bold text-dark">Testing Agent</span>
+          <span class="badge-pill green"><span class="pulse-dot" style="width:5px; height:5px;"></span> Online</span>
+        </div>
+        <div class="small text-secondary mb-3">Executes automated test suites (pytest) in the sandbox to verify that errors are resolved without regressions.</div>
+        <div class="border-top pt-2 small text-muted">
+          <div><strong>Schema:</strong> TestingOutput</div>
+          <div><strong>Role:</strong> QA & Regression</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+      <div class="card-clean h-100">
+        <div class="card-clean-header">
+          <span class="fw-bold text-dark">Deployment Agent</span>
+          <span class="badge-pill green"><span class="pulse-dot" style="width:5px; height:5px;"></span> Online</span>
+        </div>
+        <div class="small text-secondary mb-3">Builds Docker images, verifies container startup, and executes HTTP `/health` probes.</div>
+        <div class="border-top pt-2 small text-muted">
+          <div><strong>Schema:</strong> DeploymentOutput</div>
+          <div><strong>Role:</strong> Docker Sandbox</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+      <div class="card-clean h-100">
+        <div class="card-clean-header">
+          <span class="fw-bold text-dark">Monitoring Agent</span>
+          <span class="badge-pill green"><span class="pulse-dot" style="width:5px; height:5px;"></span> Online</span>
+        </div>
+        <div class="small text-secondary mb-3">Tracks post-patch health metrics, error rates, and system stability telemetry.</div>
+        <div class="border-top pt-2 small text-muted">
+          <div><strong>Schema:</strong> MonitoringOutput</div>
+          <div><strong>Role:</strong> Telemetry Watcher</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

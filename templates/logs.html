@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}DevFlow AI - Logs{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column gap-4">
+  
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+    <div>
+      <h3 class="mb-1 fw-bold text-dark">System & Agent Telemetry Logs</h3>
+      <p class="text-secondary mb-0 small">Audit trail of agent steps, tool executions, and verification logs.</p>
+    </div>
+    <button class="btn btn-devflow-outline btn-sm" onclick="window.location.reload()">
+      <i class="fa-solid fa-rotate me-1"></i> Refresh
+    </button>
+  </div>
+
+  <div class="card-clean">
+    <div class="terminal-clean" style="max-height: 600px;">
+      {% for log in logs %}
+      <div class="log-line mb-1">
+        <span class="log-time">[{{ log.timestamp.strftime('%H:%M:%S') if log.timestamp else '' }}]</span>
+        <span class="log-source">[{{ log.source }}]</span>
+        {% if log.level == 'SUCCESS' %}
+        <span class="log-msg-success">{{ log.message }}</span>
+        {% elif log.level == 'ERROR' %}
+        <span class="log-msg-error">{{ log.message }}</span>
+        {% elif log.level == 'WARN' %}
+        <span class="log-msg-warn">{{ log.message }}</span>
+        {% else %}
+        <span class="log-msg-info">{{ log.message }}</span>
+        {% endif %}
+      </div>
+      {% else %}
+      <div class="text-center text-muted py-4">No system logs recorded yet.</div>
+      {% endfor %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}

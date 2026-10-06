@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  devflow-ai:
+    build: .
+    container_name: devflow_ai_platform
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=development
+      - DEMO_MODE=true
+      - LLM_PROVIDER=demo
+      - DOCKER_ENABLED=false
+    volumes:
+      - .:/app
+    restart: unless-stopped

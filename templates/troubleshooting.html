@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block title %}DevFlow AI - AI Troubleshooter{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column gap-4">
+  
+  <div>
+    <h3 class="mb-1 fw-bold text-dark">AI Troubleshooter</h3>
+    <p class="text-secondary mb-0 small">Standalone error diagnosis and root cause analysis powered by repository vector retrieval.</p>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-5">
+      <div class="card-clean">
+        <div class="card-clean-header">
+          <h6 class="fw-bold text-dark mb-0">Diagnostic Input</h6>
+          <span class="badge-pill green">RAG Ready</span>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label text-secondary small fw-medium">Describe the error or anomaly</label>
+          <textarea id="tsProblemInput" class="task-input-area" rows="3" placeholder="e.g. My Flask API is returning HTTP 500 errors on /users endpoint during load testing."></textarea>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label text-secondary small fw-medium">Paste Runtime Logs / Stack Traces (Optional)</label>
+          <textarea id="tsLogInput" class="form-control form-control-sm font-mono" rows="5" placeholder="RuntimeError: Database connection failure: DATABASE_URL is not configured or missing."></textarea>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center">
+          <button class="btn btn-devflow-outline btn-sm" onclick="seedTroubleshootExample()">
+            Example Log
+          </button>
+          <button class="btn btn-devflow-green btn-sm" id="btnDiagnose" onclick="runDiagnoseAction()">
+            <i class="fa-solid fa-play me-1"></i> Diagnose Issue
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-7">
+      <div class="card-clean h-100" id="tsResultPanel">
+        <div class="card-clean-header">
+          <h6 class="fw-bold text-dark mb-0">Diagnostic Findings</h6>
+          <span class="badge-pill green" id="tsConfidenceBadge">94% Confidence</span>
+        </div>
+
+        <div id="tsEmptyState" class="empty-state-box py-5">
+          <div class="empty-state-icon">
+            <i class="fa-solid fa-magnifying-glass"></i>
+          </div>
+          <div class="fw-semibold text-dark small">No diagnosis yet</div>
+          <div class="text-muted small">Enter a problem description on the left and click <strong>Diagnose Issue</strong>.</div>
+        </div>
+
+        <div id="tsOutputContent" class="d-none">
+          <div class="mb-3">
+            <div class="text-secondary small text-uppercase fw-semibold mb-1">Primary Root Cause</div>
+            <div class="p-3 rounded bg-light border text-dark fw-medium" id="tsRootCauseText">
+              Missing DATABASE_URL configuration fallback causing uninitialized database connection in database.py
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <div class="text-secondary small text-uppercase fw-semibold mb-1">Ranked Hypotheses</div>
+            <div id="tsCausesList" class="d-flex flex-column gap-2">
+              <div class="p-2 rounded bg-light border d-flex justify-content-between align-items-center">
+                <div>
+                  <div class="text-dark small fw-medium">1. Missing DATABASE_URL fallback</div>
+                  <div class="text-muted small">database.py evaluates to None when unset</div>
+                </div>
+                <span class="badge-pill green">94%</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <div class="text-secondary small text-uppercase fw-semibold mb-1">Affected Files</div>
+              <ul class="list-group list-group-flush bg-transparent rounded border small" id="tsAffectedFiles">
+                <li class="list-group-item bg-transparent text-secondary py-1">config.py</li>
+                <li class="list-group-item bg-transparent text-secondary py-1">database.py</li>
+              </ul>
+            </div>
+            <div class="col-md-6">
+              <div class="text-secondary small text-uppercase fw-semibold mb-1">Recommendation</div>
+              <div class="p-2 rounded bg-light border text-secondary small" id="tsRecommendation">
+                Provide default SQLite fallback string in config.py.
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="text-secondary small text-uppercase fw-semibold mb-1">Evidence</div>
+            <div id="tsEvidenceList" class="d-flex flex-column gap-1 small text-secondary">
+              <span>&bull; config.py accesses os.environ.get('DATABASE_URL') without validation.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function seedTroubleshootExample() {
+  document.getElementById('tsProblemInput').value = "My Flask API is returning HTTP 500 errors on /users. Find the root cause and affected files.";
+  document.getElementById('tsLogInput').value = "Traceback (most recent call last):\n  File 'routes/users.py', line 9, in list_users\nRuntimeError: Database connection failure: DATABASE_URL is not configured or missing.";
+}
+
+async function runDiagnoseAction() {
+  const query = document.getElementById('tsProblemInput').value;
+  const logs = document.getElementById('tsLogInput').value;
+  if (!query) {
+    alert("Please describe the problem first.");
+    return;
+  }
+
+  const btn = document.getElementById('btnDiagnose');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Diagnosing...';
+
+  try {
+    const res = await fetch('/api/troubleshoot', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query, logs })
+    });
+    const data = await res.json();
+    if (data.diagnosis) {
+      document.getElementById('tsEmptyState').classList.add('d-none');
+      document.getElementById('tsOutputContent').classList.remove('d-none');
+      
+      const diag = data.diagnosis;
+      document.getElementById('tsRootCauseText').innerText = diag.root_cause;
+      document.getElementById('tsConfidenceBadge').innerText = `${Math.round(diag.confidence * 100)}% Confidence`;
+      document.getElementById('tsRecommendation').innerText = diag.recommendation;
+
+      const affList = document.getElementById('tsAffectedFiles');
+      affList.innerHTML = diag.affected_files.map(f => `<li class="list-group-item bg-transparent text-dark py-1">${f}</li>`).join('');
+
+      const evList = document.getElementById('tsEvidenceList');
+      evList.innerHTML = diag.evidence.map(e => `<div>&bull; ${e}</div>`).join('');
+    }
+  } catch (err) {
+    alert("Diagnosis failed: " + err);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-play me-1"></i> Diagnose Issue';
+  }
+}
+</script>
+{% endblock %}

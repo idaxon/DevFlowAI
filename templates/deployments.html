@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}DevFlow AI - Deployments{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column gap-4">
+  
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+    <div>
+      <h3 class="mb-1 fw-bold text-dark">Docker Deployments & Sandboxes</h3>
+      <p class="text-secondary mb-0 small">Container image builds, runtime health probes, and sandbox verification history.</p>
+    </div>
+    <button class="btn btn-devflow-green btn-sm" onclick="runStandaloneDocker()">
+      <i class="fa-solid fa-play me-1"></i> Standalone Validation
+    </button>
+  </div>
+
+  <div class="card-clean">
+    <div class="table-responsive">
+      <table class="table-clean align-middle">
+        <thead>
+          <tr>
+            <th>Workflow ID</th>
+            <th>Image Tag</th>
+            <th>Container ID</th>
+            <th>Port</th>
+            <th>Health</th>
+            <th>Status</th>
+            <th>Timestamp</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for dep in deployments %}
+          <tr>
+            <td>
+              {% if dep.workflow_id %}
+              <a href="/workflows/{{ dep.workflow_id }}" class="text-dark fw-semibold text-decoration-none">#{{ dep.workflow_id }}</a>
+              {% else %}
+              <span class="text-muted">Standalone</span>
+              {% endif %}
+            </td>
+            <td><code class="text-dark">{{ dep.image }}</code></td>
+            <td><code class="text-dark">{{ dep.container_id or 'auto-sandbox' }}</code></td>
+            <td>{{ dep.port }}</td>
+            <td>
+              <span class="badge-pill green">
+                <i class="fa-solid fa-check me-1"></i> {{ dep.health_status }}
+              </span>
+            </td>
+            <td><span class="badge-pill gray">{{ dep.status }}</span></td>
+            <td class="text-secondary small">{{ dep.created_at.strftime('%Y-%m-%d %H:%M:%S') if dep.created_at else '' }}</td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="7">
+              <div class="empty-state-box py-4">
+                <div class="empty-state-icon">
+                  <i class="fa-brands fa-docker"></i>
+                </div>
+                <div class="fw-semibold text-dark small">No deployment history recorded</div>
+                <div class="text-muted small">Run an AI workflow or click Standalone Validation above.</div>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function runStandaloneDocker() {
+  const btn = event.target;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Validating...';
+  try {
+    const res = await fetch('/api/deployments/run', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ image: 'devflow-standalone:latest' })
+    });
+    const data = await res.json();
+    alert(`Docker validation status: ${data.status} - Health: ${data.health_status}`);
+    window.location.reload();
+  } catch (err) {
+    alert("Docker validation error: " + err);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-play me-1"></i> Standalone Validation';
+  }
+}
+</script>
+{% endblock %}

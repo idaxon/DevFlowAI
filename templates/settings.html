@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}DevFlow AI - Settings{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column gap-4">
+  
+  <div>
+    <h3 class="mb-1 fw-bold text-dark">Platform Settings & Environment</h3>
+    <p class="text-secondary mb-0 small">Configuration parameters, LLM providers (Groq, DeepSeek, Gemini 2.5 Flash), safe execution limits, and workspace paths.</p>
+  </div>
+
+  <div class="row g-4">
+    <!-- Active LLM Provider Card -->
+    <div class="col-lg-6">
+      <div class="card-clean h-100">
+        <div class="card-clean-header">
+          <h6 class="fw-bold text-dark mb-0">Active AI Provider Configuration</h6>
+          <span class="badge-pill green">{{ config.LLM_PROVIDER.upper() }}</span>
+        </div>
+        <div class="mb-3">
+          <label class="form-label text-secondary small fw-medium">Active Provider (in .env)</label>
+          <input type="text" class="form-control form-control-sm" value="{{ config.LLM_PROVIDER }}" readonly>
+          <div class="form-text text-muted small">Supported options: <code>demo</code>, <code>groq</code>, <code>deepseek</code>, <code>gemini</code></div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label text-secondary small fw-medium">Groq Model</label>
+          <input type="text" class="form-control form-control-sm" value="{{ config.GROQ_MODEL }}" readonly>
+          <div class="form-text text-muted small">Ultra-fast inference (Llama-3.3-70b-versatile)</div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label text-secondary small fw-medium">DeepSeek Model</label>
+          <input type="text" class="form-control form-control-sm" value="{{ config.DEEPSEEK_MODEL }}" readonly>
+          <div class="form-text text-muted small">Deep code reasoning and patch synthesis (deepseek-chat)</div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label text-secondary small fw-medium">Google Gemini Target Model</label>
+          <input type="text" class="form-control form-control-sm" value="{{ config.GEMINI_MODEL }}" readonly>
+          <div class="form-text text-muted small">Multimodal and structured code generation (Gemini 2.5 Flash)</div>
+        </div>
+        <div class="mb-2">
+          <label class="form-label text-secondary small fw-medium">Demo Fallback Mode</label>
+          <input type="text" class="form-control form-control-sm" value="{{ 'ENABLED (Deterministic offline engine)' if config.DEMO_MODE else 'DISABLED' }}" readonly>
+        </div>
+      </div>
+    </div>
+
+    <!-- Execution Safeguards Card -->
+    <div class="col-lg-6">
+      <div class="card-clean h-100">
+        <div class="card-clean-header">
+          <h6 class="fw-bold text-dark mb-0">Execution Safeguards & Sandbox</h6>
+          <span class="badge-pill green">ACTIVE</span>
+        </div>
+        <div class="mb-3">
+          <label class="form-label text-secondary small fw-medium">Max Agent Retries</label>
+          <input type="text" class="form-control form-control-sm" value="{{ config.MAX_AGENT_RETRIES }} iterations" readonly>
+        </div>
+        <div class="mb-3">
+          <label class="form-label text-secondary small fw-medium">Execution Timeout</label>
+          <input type="text" class="form-control form-control-sm" value="{{ config.MAX_EXECUTION_TIMEOUT }} seconds" readonly>
+        </div>
+        <div class="mb-3">
+          <label class="form-label text-secondary small fw-medium">Docker Daemon Mode</label>
+          <input type="text" class="form-control form-control-sm" value="{{ 'Live Docker Daemon Enabled' if config.DOCKER_ENABLED else 'Isolated Sandbox Mode (Zero Docker Daemon required)' }}" readonly>
+        </div>
+        <div class="mb-3">
+          <label class="form-label text-secondary small fw-medium">Vector Store Ingestion</label>
+          <input type="text" class="form-control form-control-sm" value="Scikit-Learn TF-IDF + Cosine Similarity Vector Index" readonly>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

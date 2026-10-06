@@ -1,0 +1,392 @@
+{% extends "base.html" %}
+
+{% block title %}DevFlow AI - Workflow Details{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column gap-4">
+
+  <!-- Header & Status Bar -->
+  <div class="card-clean">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+      <div>
+        <div class="d-flex align-items-center gap-3">
+          <h4 class="mb-0 fw-bold text-dark" id="wfTitle">Workflow</h4>
+          <span class="badge-pill gray" id="wfStatusBadge">LOADING</span>
+        </div>
+        <p class="text-secondary mb-0 mt-1 small" id="wfRequestText">Loading request details...</p>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button class="btn btn-devflow-outline btn-sm" onclick="exportReportJson()">
+          <i class="fa-solid fa-file-arrow-down me-1"></i> JSON Report
+        </button>
+        <button class="btn btn-devflow-outline btn-sm" onclick="window.print()">
+          <i class="fa-solid fa-print me-1"></i> Print
+        </button>
+        <a href="/" class="btn btn-devflow-outline btn-sm">
+          &larr; Back
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Left Column: Visual Step-by-Step Workflow Pipeline -->
+    <div class="col-xl-4 col-lg-5 col-12">
+      <div class="card-clean h-100">
+        <div class="card-clean-header">
+          <span class="fw-bold text-dark small text-uppercase">Pipeline Steps</span>
+          <span class="text-secondary small fw-medium" id="wfTotalDuration">0.0s</span>
+        </div>
+
+        <div class="workflow-timeline-clean" id="workflowTimeline">
+          <!-- Step 1: Intent -->
+          <div class="timeline-step" id="step-intent">
+            <div class="timeline-dot"><i class="fa-solid fa-check"></i></div>
+            <div class="timeline-content-clean">
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="fw-semibold text-dark small">Intent Analysis</span>
+                <span class="badge-pill gray step-status">PENDING</span>
+              </div>
+              <div class="small text-muted mt-1 step-desc">Goal parsing & decomposition</div>
+            </div>
+          </div>
+
+          <!-- Step 2: Repo Analysis -->
+          <div class="timeline-step" id="step-repo_analysis">
+            <div class="timeline-dot"><i class="fa-solid fa-check"></i></div>
+            <div class="timeline-content-clean">
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="fw-semibold text-dark small">Repository Analysis</span>
+                <span class="badge-pill gray step-status">PENDING</span>
+              </div>
+              <div class="small text-muted mt-1 step-desc">Code structure scan</div>
+            </div>
+          </div>
+
+          <!-- Step 3: RAG Retrieval -->
+          <div class="timeline-step" id="step-rag">
+            <div class="timeline-dot"><i class="fa-solid fa-check"></i></div>
+            <div class="timeline-content-clean">
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="fw-semibold text-dark small">RAG Context Retrieval</span>
+                <span class="badge-pill gray step-status">PENDING</span>
+              </div>
+              <div class="small text-muted mt-1 step-desc">Vector similarity matching</div>
+            </div>
+          </div>
+
+          <!-- Step 4: Troubleshooting -->
+          <div class="timeline-step" id="step-troubleshoot">
+            <div class="timeline-dot"><i class="fa-solid fa-check"></i></div>
+            <div class="timeline-content-clean">
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="fw-semibold text-dark small">Troubleshooting</span>
+                <span class="badge-pill gray step-status">PENDING</span>
+              </div>
+              <div class="small text-muted mt-1 step-desc">Root cause & confidence ranking</div>
+            </div>
+          </div>
+
+          <!-- Step 5: Debugging -->
+          <div class="timeline-step" id="step-debug">
+            <div class="timeline-dot"><i class="fa-solid fa-check"></i></div>
+            <div class="timeline-content-clean">
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="fw-semibold text-dark small">Code Patch Synthesis</span>
+                <span class="badge-pill gray step-status">PENDING</span>
+              </div>
+              <div class="small text-muted mt-1 step-desc">Minimal non-breaking patch</div>
+            </div>
+          </div>
+
+          <!-- Step 6: Testing -->
+          <div class="timeline-step" id="step-test">
+            <div class="timeline-dot"><i class="fa-solid fa-check"></i></div>
+            <div class="timeline-content-clean">
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="fw-semibold text-dark small">Automated Testing</span>
+                <span class="badge-pill gray step-status">PENDING</span>
+              </div>
+              <div class="small text-muted mt-1 step-desc">Pytest validation in sandbox</div>
+            </div>
+          </div>
+
+          <!-- Step 7: Docker -->
+          <div class="timeline-step" id="step-docker">
+            <div class="timeline-dot"><i class="fa-solid fa-check"></i></div>
+            <div class="timeline-content-clean">
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="fw-semibold text-dark small">Docker Sandbox</span>
+                <span class="badge-pill gray step-status">PENDING</span>
+              </div>
+              <div class="small text-muted mt-1 step-desc">Build & /health validation</div>
+            </div>
+          </div>
+
+          <!-- Step 8: Approval -->
+          <div class="timeline-step" id="step-approval">
+            <div class="timeline-dot"><i class="fa-solid fa-check"></i></div>
+            <div class="timeline-content-clean">
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="fw-semibold text-dark small">Human Approval Gate</span>
+                <span class="badge-pill gray step-status">PENDING</span>
+              </div>
+              <div class="small text-muted mt-1 step-desc">Merge gating</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Results & Interactive Human Approval -->
+    <div class="col-xl-8 col-lg-7 col-12">
+      <div class="d-flex flex-column gap-4">
+
+        <!-- Human Approval Action Gate Banner -->
+        <div id="humanApprovalGate" class="card-clean border-warning d-none" style="background: linear-gradient(180deg, #fffdf5 0%, #fef8e7 100%); border: 1.5px solid #fde68a; box-shadow: 0 4px 14px rgba(245, 158, 11, 0.1);">
+          
+          <!-- Banner Header & Action Buttons -->
+          <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-3">
+            <div>
+              <div class="d-flex align-items-center gap-2 mb-1">
+                <i class="fa-solid fa-shield-halved text-warning fs-5"></i>
+                <h6 class="fw-bold text-dark mb-0 fs-6">Human Approval & Merge Decision Required</h6>
+                <span class="badge-pill amber" style="font-size: 0.7rem;">ACTION REQUIRED</span>
+              </div>
+              <!-- Decision Prompt Sentence -->
+              <p class="text-dark mb-0 small" style="line-height: 1.5;">
+                <strong>Decision Prompt:</strong> Do you want to approve merging fix branch <code class="text-success fw-bold bg-white px-2 py-0.5 rounded border" id="gateQuestionBranch">fix/devflow-branch</code> into <strong class="text-dark" id="gateQuestionRepo">DevFlow-Platform (main)</strong> to resolve: <em class="text-secondary" id="gateQuestionCause">"Identified root cause diagnosis"</em>?
+              </p>
+            </div>
+            <div class="d-flex gap-2 align-items-center">
+              <button class="btn btn-outline-danger btn-sm px-3 bg-white shadow-sm fw-medium" onclick="rejectWorkflowAction()">
+                <i class="fa-solid fa-xmark me-1"></i> Reject
+              </button>
+              <button class="btn btn-devflow-green btn-sm px-3 fw-semibold shadow-sm" onclick="approveWorkflowAction()">
+                <i class="fa-solid fa-check me-1"></i> Approve & Merge
+              </button>
+            </div>
+          </div>
+
+          <!-- Explanations of the two options -->
+          <div class="p-2 px-3 mb-3 rounded bg-white border small d-flex flex-column gap-1" style="border-color: #fef08a !important;">
+            <div class="d-flex align-items-start gap-2">
+              <span class="badge-pill green py-0 px-2 fw-semibold" style="font-size: 0.65rem; flex-shrink: 0; margin-top: 2px;">APPROVE & MERGE</span>
+              <span class="text-secondary">Merges the tested patch branch into <strong class="text-dark">main</strong>, updates repository files, triggers container deployment, and closes this issue.</span>
+            </div>
+            <div class="d-flex align-items-start gap-2">
+              <span class="badge-pill red py-0 px-2 fw-semibold" style="font-size: 0.65rem; flex-shrink: 0; margin-top: 2px;">REJECT</span>
+              <span class="text-secondary">Declines this specific code patch, keeps current repository files untouched, and asks the AI agent to regenerate an alternative fix strategy.</span>
+            </div>
+          </div>
+
+          <!-- Pre-Merge Audit & Verification Details Grid -->
+          <div class="p-3 bg-white rounded border" style="border-color: #fef08a !important;">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2 pb-2 border-bottom">
+              <div class="small text-dark fw-bold text-uppercase d-flex align-items-center gap-2">
+                <i class="fa-solid fa-clipboard-check text-success"></i>
+                <span>Pre-Merge Verification Checklist</span>
+              </div>
+              <div class="small text-secondary">
+                Target: <span class="fw-bold text-dark" id="gateRepoName">DevFlow-Platform</span> &larr; <code class="text-success fw-bold" id="gateBranchBadge">fix/branch</code>
+              </div>
+            </div>
+
+            <div class="row g-2 small">
+              <div class="col-md-6">
+                <div class="p-2 rounded bg-light border d-flex align-items-center gap-2">
+                  <i class="fa-solid fa-circle-check text-success fs-6"></i>
+                  <div>
+                    <strong class="text-dark">Code Patch Synthesis:</strong>
+                    <div class="text-secondary" id="gatePatchFiles">Minimal non-breaking patch validated</div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="p-2 rounded bg-light border d-flex align-items-center gap-2">
+                  <i class="fa-solid fa-circle-check text-success fs-6" id="gateTestIcon"></i>
+                  <div>
+                    <strong class="text-dark">Test Suite:</strong>
+                    <div class="text-secondary" id="gateTestStatus">3/3 unit & regression tests passed in sandbox</div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="p-2 rounded bg-light border d-flex align-items-center gap-2">
+                  <i class="fa-solid fa-circle-check text-success fs-6"></i>
+                  <div>
+                    <strong class="text-dark">Docker Sandbox:</strong>
+                    <div class="text-secondary" id="gateDockerStatus">Build healthy & HTTP /health returned 200 OK</div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="p-2 rounded bg-light border d-flex align-items-center gap-2">
+                  <i class="fa-solid fa-circle-check text-success fs-6"></i>
+                  <div>
+                    <strong class="text-dark">Merge Automation:</strong>
+                    <div class="text-secondary">Auto-PR merge, deployment trigger & audit log</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Root Cause Diagnosis Card -->
+        <div class="card-clean" id="diagnosisCard">
+          <div class="card-clean-header">
+            <h6 class="fw-bold text-dark mb-0">Root Cause Diagnosis</h6>
+            <span class="badge-pill green" id="diagConfidence">--% Confidence</span>
+          </div>
+
+          <div class="mb-3">
+            <div class="text-secondary small text-uppercase fw-semibold mb-1">Identified Cause</div>
+            <div class="p-3 rounded bg-light border text-dark fw-medium" id="diagRootCause">
+              Awaiting diagnosis...
+            </div>
+          </div>
+
+          <div class="row g-3">
+            <div class="col-md-6">
+              <div class="text-secondary small text-uppercase fw-semibold mb-1">Affected Files</div>
+              <ul class="list-group list-group-flush bg-transparent rounded border small" id="diagAffectedFiles">
+                <li class="list-group-item bg-transparent text-secondary py-2">None identified</li>
+              </ul>
+            </div>
+
+            <div class="col-md-6">
+              <div class="text-secondary small text-uppercase fw-semibold mb-1">Recommendation</div>
+              <div class="p-2 rounded bg-light border text-secondary small" id="diagRecommendation">
+                No recommendation generated yet.
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-3">
+            <div class="text-secondary small text-uppercase fw-semibold mb-1">Evidence</div>
+            <div id="diagEvidence" class="d-flex flex-column gap-1 small text-secondary">
+              <span>&bull; Awaiting evidence extraction...</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Code Diff Patch Card -->
+        <div class="card-clean" id="diffCard">
+          <div class="card-clean-header">
+            <h6 class="fw-bold text-dark mb-0">Proposed Code Patch (Unified Diff)</h6>
+            <span class="badge-pill gray" id="diffBranchBadge">branch</span>
+          </div>
+
+          <div class="diff-container-clean" id="diffContent">
+            <div class="p-3 text-muted small"><span class="spinner-border spinner-border-sm text-success me-2"></span>Loading patch data...</div>
+          </div>
+        </div>
+
+        <!-- Test & Deployment Validation Cards -->
+        <div class="row g-3">
+          <!-- Automated Tests -->
+          <div class="col-md-6">
+            <div class="card-clean h-100">
+              <div class="card-clean-header">
+                <h6 class="fw-bold text-dark mb-0">Automated Tests</h6>
+                <span class="badge-pill green" id="testStatusBadge">PASSED</span>
+              </div>
+              <div class="d-flex justify-content-around py-2 text-center">
+                <div>
+                  <div class="fs-4 fw-bold text-dark" id="testTotal">--</div>
+                  <div class="small text-muted">Total</div>
+                </div>
+                <div>
+                  <div class="fs-4 fw-bold text-success" id="testPassed">--</div>
+                  <div class="small text-muted">Passed</div>
+                </div>
+                <div>
+                  <div class="fs-4 fw-bold text-danger" id="testFailed">--</div>
+                  <div class="small text-muted">Failed</div>
+                </div>
+                <div>
+                  <div class="fs-4 fw-bold text-dark" id="testDuration">--s</div>
+                  <div class="small text-muted">Duration</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Docker Container -->
+          <div class="col-md-6">
+            <div class="card-clean h-100">
+              <div class="card-clean-header">
+                <h6 class="fw-bold text-dark mb-0">Docker Validation</h6>
+                <span class="badge-pill green" id="dockerHealthBadge">HEALTHY</span>
+              </div>
+              <div class="small text-secondary mt-1">
+                <div><strong>Image:</strong> <code id="dockerImage" class="text-dark">devflow-app:test</code></div>
+                <div><strong>Container:</strong> <code id="dockerContainer" class="text-dark">sandbox-auto</code></div>
+                <div><strong>Port:</strong> <span id="dockerPort" class="text-dark">5000</span></div>
+                <div class="mt-2"><span class="text-success fw-semibold"><i class="fa-solid fa-check me-1"></i> HTTP /health returned 200 OK</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- AI Follow-up & Next Tasks Chat Box -->
+        <div class="card-clean" id="followupChatCard">
+          <div class="card-clean-header">
+            <div class="d-flex align-items-center gap-2">
+              <i class="fa-solid fa-robot text-success"></i>
+              <h6 class="fw-bold text-dark mb-0">AI Follow-up Assistant & Next Tasks</h6>
+            </div>
+            <span class="badge-pill green"><span class="pulse-dot" style="width:5px; height:5px;"></span> Copilot Ready</span>
+          </div>
+
+          <!-- Quick suggestion chips -->
+          <div class="d-flex flex-wrap gap-2 mb-3">
+            <button class="btn btn-sm btn-outline-secondary py-1 px-2 rounded-pill small" onclick="sendQuickPrompt('Explain the root cause and why this fix works in plain English')">
+              <i class="fa-solid fa-circle-question me-1 text-success"></i> Explain root cause
+            </button>
+            <button class="btn btn-sm btn-outline-secondary py-1 px-2 rounded-pill small" onclick="sendQuickPrompt('How do I run and verify these tests locally in my terminal?')">
+              <i class="fa-solid fa-terminal me-1 text-dark"></i> Local test commands
+            </button>
+            <button class="btn btn-sm btn-outline-secondary py-1 px-2 rounded-pill small" onclick="sendQuickPrompt('What edge cases or performance impacts should I test before production merge?')">
+              <i class="fa-solid fa-shield-halved me-1 text-warning"></i> Check edge cases
+            </button>
+            <button class="btn btn-sm btn-outline-secondary py-1 px-2 rounded-pill small" onclick="sendQuickPrompt('Generate step-by-step rollback and rollback verification instructions')">
+              <i class="fa-solid fa-rotate-left me-1 text-danger"></i> Rollback guide
+            </button>
+          </div>
+
+          <!-- Message thread container -->
+          <div id="chatMessageThread" class="p-3 bg-light rounded border mb-3" style="max-height: 320px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px;">
+            <div class="d-flex gap-2">
+              <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 28px; height: 28px; flex-shrink: 0; font-size: 0.75rem;">
+                <i class="fa-solid fa-robot"></i>
+              </div>
+              <div class="bg-white p-3 rounded shadow-sm border small text-dark" style="max-width: 85%;">
+                <strong>DevFlow Copilot:</strong>
+                <p class="mb-0 mt-1">Workflow diagnosis and code synthesis complete. You can ask follow-up questions about the fix, request alternative patches, or ask for local debugging steps.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Input field & Send button -->
+          <div class="input-group">
+            <input type="text" id="chatInputMessage" class="form-control" placeholder="Ask follow-up question, request next task, or report new problem..." onkeydown="if(event.key==='Enter') sendChatMessage()">
+            <button class="btn btn-devflow-green px-4" id="btnSendChat" onclick="sendChatMessage()">
+              <i class="fa-solid fa-paper-plane me-1"></i> Send
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_prefix|default('') }}/static/js/workflow.js?v=3.4"></script>
+{% endblock %}
+

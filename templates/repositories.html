@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+
+{% block title %}DevFlow AI - Repositories{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column gap-4">
+  
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+    <div>
+      <h3 class="mb-1 fw-bold text-dark">Connected Repositories</h3>
+      <p class="text-secondary mb-0 small">Repositories registered for vector chunking, RAG retrieval, and isolated branch sandboxing.</p>
+    </div>
+    <button class="btn btn-devflow-green btn-sm" data-bs-toggle="modal" data-bs-target="#uploadRepoModal">
+      <i class="fa-solid fa-cloud-arrow-up me-1"></i> Upload Repository
+    </button>
+  </div>
+
+  <div class="card-clean">
+    <div class="table-responsive">
+      <table class="table-clean align-middle">
+        <thead>
+          <tr>
+            <th>Repository</th>
+            <th>Branch</th>
+            <th>Language</th>
+            <th>Files</th>
+            <th>Tests</th>
+            <th>Docker</th>
+            <th>RAG Index</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for repo in repositories %}
+          <tr>
+            <td>
+              <a href="/repositories/{{ repo.id }}" class="fw-semibold text-dark text-decoration-none d-flex align-items-center gap-2">
+                <i class="fa-brands fa-github text-muted"></i>
+                <span>{{ repo.name }}</span>
+              </a>
+              <div class="small text-muted">{{ repo.url }}</div>
+            </td>
+            <td><span class="badge-pill gray">{{ repo.branch }}</span></td>
+            <td><span class="fw-medium text-dark">{{ repo.language }}</span></td>
+            <td>{{ repo.file_count }} files</td>
+            <td>{{ repo.test_count }} tests</td>
+            <td>
+              {% if repo.has_docker %}
+              <span class="text-success small fw-semibold"><i class="fa-solid fa-check me-1"></i> Ready</span>
+              {% else %}
+              <span class="text-muted small">No</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if repo.rag_status == 'indexed' %}
+              <span class="badge-pill green"><span class="pulse-dot" style="width:5px; height:5px;"></span> Indexed</span>
+              {% else %}
+              <span class="badge-pill amber">Unindexed</span>
+              {% endif %}
+            </td>
+            <td>
+              <div class="d-flex align-items-center gap-1">
+                <button class="btn btn-sm btn-devflow-outline py-1 px-2" data-repo-id="{{ repo.id }}" onclick="reindexRepo({{ repo.id }})" title="Re-index RAG vector embeddings">
+                  <i class="fa-solid fa-rotate me-1"></i> Re-index
+                </button>
+                <button class="btn btn-sm btn-outline-danger py-1 px-2" onclick="deleteRepo({{ repo.id }}, '{{ repo.name }}')" title="Delete repository">
+                  <i class="fa-regular fa-trash-can"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="8">
+              <div class="empty-state-box py-4">
+                <div class="empty-state-icon">
+                  <i class="fa-regular fa-folder-open"></i>
+                </div>
+                <div class="fw-semibold text-dark small">No repositories registered</div>
+                <div class="text-muted small">Upload a .zip or connect a local directory above.</div>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- Upload / Connect Repository Modal -->
+<div class="modal fade" id="uploadRepoModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content bg-white border-0 shadow-lg" style="border-radius: 16px;">
+      <div class="modal-header border-bottom py-3 px-4">
+        <h6 class="modal-title fw-bold text-dark">
+          <i class="fa-solid fa-cloud-arrow-up text-success me-2"></i>Upload or Connect Repository
+        </h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4">
+        
+        <ul class="nav nav-pills nav-fill mb-3" id="repoUploadTabs">
+          <li class="nav-item">
+            <button class="nav-link active btn-sm" data-bs-toggle="tab" data-bs-target="#tabZipUpload">Upload .ZIP Archive</button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link btn-sm" data-bs-toggle="tab" data-bs-target="#tabLocalFolder">Local Path / Git URL</button>
+          </li>
+        </ul>
+
+        <div class="tab-content">
+          <!-- Tab 1: ZIP Upload -->
+          <div class="tab-pane fade show active" id="tabZipUpload">
+            <div class="dropzone-box-clean mb-3" onclick="document.getElementById('zipFileInput').click()">
+              <i class="fa-solid fa-file-zipper fs-2 text-muted mb-2"></i>
+              <div class="fw-semibold small text-dark" id="zipFileLabel">Click or drag & drop project .zip here</div>
+              <div class="text-muted small">Supports Python, Node.js, Java, and Go repositories</div>
+              <input type="file" id="zipFileInput" accept=".zip" class="d-none" onchange="handleFileSelected(this)">
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label text-secondary small fw-medium">Repository Name</label>
+              <input type="text" id="uploadRepoName" class="form-control form-control-sm" placeholder="e.g. my-flask-service">
+            </div>
+
+            <button type="button" class="btn btn-devflow-green w-100 btn-sm" id="btnUploadZip" onclick="submitZipUpload()">
+              <i class="fa-solid fa-cloud-arrow-up me-1"></i> Upload & Auto-Index RAG
+            </button>
+          </div>
+
+          <!-- Tab 2: Local / Git URL -->
+          <div class="tab-pane fade" id="tabLocalFolder">
+            <div class="mb-3">
+              <label class="form-label text-secondary small fw-medium">Repository Name</label>
+              <input type="text" id="connectRepoName" class="form-control form-control-sm" placeholder="e.g. auth-microservice">
+            </div>
+            <div class="mb-3">
+              <label class="form-label text-secondary small fw-medium">Local Directory Path or Git URL</label>
+              <input type="text" id="connectRepoPath" class="form-control form-control-sm" placeholder="e.g. C:\projects\my-app or https://github.com/org/repo">
+            </div>
+            <button type="button" class="btn btn-devflow-outline w-100 btn-sm" onclick="submitConnectRepoForm()">
+              <i class="fa-solid fa-link me-1"></i> Connect & Index
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_prefix|default('') }}/static/js/repository.js"></script>
+<script>
+// Auto-refresh all repo stats once per page load to show real unique data
+document.addEventListener('DOMContentLoaded', async () => {
+  // Only refresh once — avoid infinite reload loop
+  if (sessionStorage.getItem('repoStatsRefreshed') === 'true') {
+    sessionStorage.removeItem('repoStatsRefreshed');
+    return;
+  }
+
+  const reindexBtns = document.querySelectorAll('[data-repo-id]');
+  if (reindexBtns.length === 0) return;
+
+  let anyChanged = false;
+  for (const btn of reindexBtns) {
+    const repoId = btn.dataset.repoId;
+    try {
+      const res = await fetch(`/api/repositories/${repoId}/refresh`, { method: 'POST' });
+      if (res.ok) anyChanged = true;
+    } catch (e) {
+      console.warn('Stats refresh failed for repo', repoId);
+    }
+  }
+  if (anyChanged) {
+    sessionStorage.setItem('repoStatsRefreshed', 'true');
+    window.location.reload();
+  }
+});
+</script>
+{% endblock %}

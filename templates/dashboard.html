@@ -1,0 +1,427 @@
+{% extends "base.html" %}
+
+{% block title %}DevFlow AI - Dashboard{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column gap-4">
+
+  <!-- Hero Banner Card -->
+  <div class="hero-banner-card">
+    <div class="row align-items-center g-4">
+      <div class="col-lg-7">
+        <div class="hero-tagline">AI-POWERED DEVOPS PLATFORM</div>
+        <h1 class="hero-title">
+          Build. Debug. Deploy,<br>
+          <span class="text-green-accent">Faster with DevFlow AI.</span>
+        </h1>
+        <p class="hero-desc">
+          Describe your issue or task and let DevFlow AI analyze, fix, test and validate your application.
+        </p>
+      </div>
+
+      <!-- Right Side Flow Illustration Graphic -->
+      <div class="col-lg-5">
+        <div class="hero-wave-container">
+          <div class="wave-note">
+            From Issue<br>to Deployment &rarr;
+          </div>
+          <svg width="100%" height="130" viewBox="0 0 380 120" fill="none" xmlns="http://www.w3.org/2000/svg" style="max-width: 360px;">
+            <!-- Subtle background wave -->
+            <path d="M 20 85 Q 80 100 130 65 T 240 75 T 340 30" stroke="#a7f3d0" stroke-width="1.5" stroke-dasharray="3 3" fill="none" opacity="0.6"/>
+            <!-- Primary Green Pipeline Wave -->
+            <path d="M 20 85 C 60 85 90 60 130 60 C 170 60 200 80 240 80 C 280 80 300 30 340 30" stroke="#10b981" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+            
+            <!-- Step 1: Analyze -->
+            <circle cx="20" cy="85" r="5" fill="#0f172a"/>
+            <text x="20" y="68" font-size="11" font-weight="600" fill="#0f172a" text-anchor="middle" font-family="Inter, sans-serif">Analyze</text>
+
+            <!-- Step 2: Fix -->
+            <circle cx="130" cy="60" r="5" fill="#10b981"/>
+            <text x="130" y="44" font-size="11" font-weight="600" fill="#10b981" text-anchor="middle" font-family="Inter, sans-serif">Fix</text>
+
+            <!-- Step 3: Test -->
+            <circle cx="240" cy="80" r="5" fill="#0f172a"/>
+            <text x="240" y="102" font-size="11" font-weight="600" fill="#0f172a" text-anchor="middle" font-family="Inter, sans-serif">Test</text>
+
+            <!-- Step 4: Deploy -->
+            <circle cx="340" cy="30" r="5" fill="#10b981"/>
+            <text x="340" y="15" font-size="11" font-weight="600" fill="#10b981" text-anchor="middle" font-family="Inter, sans-serif">Deploy</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Interactive Task Card & System Status Row -->
+  <div class="row g-4">
+    
+    <!-- Left Column: Main Prompt & Execution Card -->
+    <div class="col-lg-8">
+      <div class="card-clean h-100 d-flex flex-column justify-content-between">
+        <div>
+          <!-- Tab Navigation -->
+          <div class="task-card-nav">
+            <button class="task-nav-btn active" id="tabDescribeBtn" onclick="switchPromptTab('describe')">
+              <i class="fa-regular fa-comment-dots"></i>
+              <span>Describe Task</span>
+            </button>
+            <button class="task-nav-btn" id="tabUploadBtn" data-bs-toggle="modal" data-bs-target="#uploadRepoModal">
+              <i class="fa-solid fa-cloud-arrow-up"></i>
+              <span>Upload Repository</span>
+            </button>
+            <button class="task-nav-btn" id="tabExampleBtn" onclick="seedSampleTask()">
+              <i class="fa-regular fa-file-lines"></i>
+              <span>Example Tasks</span>
+            </button>
+
+            <!-- Standard Workspace selector -->
+            <div class="workspace-select-btn">
+              <i class="fa-regular fa-folder-closed text-muted"></i>
+              <span>Standard Workspace</span>
+              <i class="fa-solid fa-chevron-down text-muted" style="font-size: 0.65rem;"></i>
+            </div>
+          </div>
+
+          <!-- Natural Language Textarea -->
+          <textarea id="taskInput" class="task-input-area" placeholder="Describe your problem or task in natural language..."></textarea>
+
+          <!-- Quick Suggestion Chips -->
+          <div class="chips-container">
+            <button type="button" class="chip-btn" onclick="setPrompt('Fix API 500 errors on /users endpoint when database is unconfigured')">Fix API 500 error</button>
+            <button type="button" class="chip-btn" onclick="setPrompt('Add JWT authentication middleware guard to sensitive endpoints')">Add authentication</button>
+            <button type="button" class="chip-btn" onclick="setPrompt('Diagnose and fix failing unit test assertions in test suite')">Fix failing tests</button>
+            <button type="button" class="chip-btn" onclick="setPrompt('Remediate Docker build failure and missing COPY layer instructions')">Docker build issue</button>
+            <button type="button" class="chip-btn" onclick="setPrompt('Add /health JSON status endpoint for container health probes')">Add health endpoint</button>
+          </div>
+        </div>
+
+        <!-- Task Bottom Action Bar -->
+        <div class="task-action-bar pt-2">
+          <!-- Repo Selector Pill -->
+          <div class="repo-selector-group">
+            <div class="repo-dropdown-btn">
+              <i class="fa-brands fa-github text-dark"></i>
+              <select id="repoSelect" class="border-0 bg-transparent text-dark fw-medium p-0" style="outline: none; cursor: pointer;">
+                <option value="1">flask-demo-api (main)</option>
+              </select>
+            </div>
+            <button class="btn-icon-square" data-bs-toggle="modal" data-bs-target="#uploadRepoModal" title="Add or Upload Repository">
+              <i class="fa-solid fa-plus" style="font-size: 0.8rem;"></i>
+            </button>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-devflow-outline" onclick="analyzeRepositoryAction()" title="Index RAG Vectors">
+              <i class="fa-solid fa-sliders text-muted me-1"></i>
+              <span>Advanced</span>
+            </button>
+            <button id="btnCheckup" class="btn btn-devflow-outline" onclick="runCheckupAction()" title="Autonomous Code Health Scan & Vulnerability Audit">
+              <i class="fa-solid fa-stethoscope text-success me-1"></i>
+              <span>Check up</span>
+            </button>
+            <button id="btnRunWorkflow" class="btn btn-devflow-green" onclick="triggerWorkflowAction()">
+              <i class="fa-solid fa-play" style="font-size: 0.75rem;"></i>
+              <span>Run AI Workflow</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Right Column: System Status Card -->
+    <div class="col-lg-4">
+      <div class="card-clean h-100">
+        <div class="card-clean-header">
+          <h6 class="fw-bold text-dark mb-0">System Status</h6>
+          <span class="badge-pill green">
+            <span class="pulse-dot"></span>
+            All Systems Operational
+          </span>
+        </div>
+
+        <div class="system-status-list mt-3">
+          <div class="status-row">
+            <div class="status-label">
+              <i class="fa-solid fa-robot"></i>
+              <span>AI Agents</span>
+            </div>
+            <div class="status-value-dot">
+              <span class="mini-dot"></span>
+              Online
+            </div>
+          </div>
+
+          <div class="status-row">
+            <div class="status-label">
+              <i class="fa-solid fa-database"></i>
+              <span>RAG Database</span>
+            </div>
+            <div class="status-value-dot">
+              <span class="mini-dot"></span>
+              Ready
+            </div>
+          </div>
+
+          <div class="status-row">
+            <div class="status-label">
+              <i class="fa-brands fa-docker"></i>
+              <span>Docker Engine</span>
+            </div>
+            <div class="status-value-dot">
+              <span class="mini-dot"></span>
+              Available
+            </div>
+          </div>
+
+          <div class="status-row">
+            <div class="status-label">
+              <i class="fa-solid fa-flask"></i>
+              <span>Test Runner</span>
+            </div>
+            <div class="status-value-dot">
+              <span class="mini-dot"></span>
+              Ready
+            </div>
+          </div>
+
+          <div class="status-row">
+            <div class="status-label">
+              <i class="fa-brands fa-github"></i>
+              <span>GitHub Integration</span>
+            </div>
+            <div class="status-value-dot">
+              <span class="mini-dot"></span>
+              Connected
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Metric Cards Row -->
+  <div class="row g-3">
+    <!-- Repositories -->
+    <div class="col-6 col-lg-3">
+      <div class="metric-card">
+        <div class="metric-left">
+          <div class="metric-icon-badge">
+            <i class="fa-regular fa-folder"></i>
+          </div>
+          <div>
+            <div class="metric-info-title" id="metricRepos">1</div>
+            <div class="metric-info-label">Repositories</div>
+          </div>
+        </div>
+        <!-- Micro Sparkline SVG -->
+        <svg class="metric-sparkline" viewBox="0 0 65 30" fill="none">
+          <path d="M2 20 Q 15 25 25 15 T 45 10 T 63 5" stroke="#10b981" stroke-width="2" stroke-linecap="round" fill="none"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Active Workflows -->
+    <div class="col-6 col-lg-3">
+      <div class="metric-card">
+        <div class="metric-left">
+          <div class="metric-icon-badge">
+            <i class="fa-solid fa-play" style="font-size: 0.85rem;"></i>
+          </div>
+          <div>
+            <div class="metric-info-title" id="metricActiveWf">0</div>
+            <div class="metric-info-label">Active Workflows</div>
+          </div>
+        </div>
+        <!-- Micro Sparkline SVG -->
+        <svg class="metric-sparkline" viewBox="0 0 65 30" fill="none">
+          <path d="M2 18 Q 15 12 30 20 T 50 15 T 63 18" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round" fill="none"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Pass Rate -->
+    <div class="col-6 col-lg-3">
+      <div class="metric-card">
+        <div class="metric-left">
+          <div class="metric-icon-badge">
+            <i class="fa-regular fa-circle-check"></i>
+          </div>
+          <div>
+            <div class="metric-info-title" id="metricSuccessRate">87.5%</div>
+            <div class="metric-info-label">Pass Rate</div>
+          </div>
+        </div>
+        <!-- Micro Sparkline SVG -->
+        <svg class="metric-sparkline" viewBox="0 0 65 30" fill="none">
+          <path d="M2 22 Q 18 10 32 18 T 50 8 T 63 4" stroke="#10b981" stroke-width="2" stroke-linecap="round" fill="none"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Avg Execution Time -->
+    <div class="col-6 col-lg-3">
+      <div class="metric-card">
+        <div class="metric-left">
+          <div class="metric-icon-badge">
+            <i class="fa-regular fa-clock"></i>
+          </div>
+          <div>
+            <div class="metric-info-title" id="metricAvgTime">42.0s</div>
+            <div class="metric-info-label">Avg. Execution Time</div>
+          </div>
+        </div>
+        <!-- Micro Sparkline SVG -->
+        <svg class="metric-sparkline" viewBox="0 0 65 30" fill="none">
+          <path d="M2 15 Q 15 5 30 18 T 48 10 T 63 14" stroke="#10b981" stroke-width="2" stroke-linecap="round" fill="none"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Row: Recent Workflows & Live Execution Logs -->
+  <div class="row g-4">
+    
+    <!-- Left Column: Recent Workflows -->
+    <div class="col-lg-7">
+      <div class="card-clean h-100">
+        <div class="card-clean-header">
+          <h6 class="fw-bold text-dark mb-0">Recent Workflows</h6>
+          <a href="/workflows" class="text-secondary text-decoration-none small fw-semibold">
+            View All <i class="fa-solid fa-arrow-right ms-1" style="font-size: 0.75rem;"></i>
+          </a>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table-clean align-middle">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Task</th>
+                <th>Repository</th>
+                <th>Status</th>
+                <th>Stage</th>
+                <th>Duration</th>
+                <th>Started</th>
+              </tr>
+            </thead>
+            <tbody id="workflowTableBody">
+              <!-- Populated dynamically via JS or fallback to empty state -->
+              <tr>
+                <td colspan="7">
+                  <div class="empty-state-box py-4">
+                    <div class="empty-state-icon">
+                      <i class="fa-regular fa-folder-open"></i>
+                    </div>
+                    <div class="fw-semibold text-dark small">No workflows yet</div>
+                    <div class="text-muted small">Run your first workflow to see it here.</div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Live Execution Logs -->
+    <div class="col-lg-5">
+      <div class="card-clean h-100">
+        <div class="card-clean-header">
+          <h6 class="fw-bold text-dark mb-0">Live Execution Logs</h6>
+          <span class="badge-pill green">
+            <span class="mini-dot"></span>
+            Live
+          </span>
+        </div>
+
+        <div class="terminal-clean" id="terminalLogContainer">
+          <div class="log-line"><span class="log-time">[23:41:02]</span> <span class="log-source">System</span> <span class="log-msg-info">DevFlow AI engine initialized.</span></div>
+          <div class="log-line"><span class="log-time">[23:41:02]</span> <span class="log-source">RAG</span> <span class="log-msg-info">Vector database ready.</span></div>
+          <div class="log-line"><span class="log-time">[23:41:03]</span> <span class="log-source">Agents</span> <span class="log-msg-info">All agents online.</span></div>
+          <div class="log-line"><span class="log-time">[23:41:03]</span> <span class="log-source">Docker</span> <span class="log-msg-info">Docker engine detected.</span></div>
+          <div class="log-line"><span class="log-time">[23:41:03]</span> <span class="log-source">Tests</span> <span class="log-msg-info">Pytest runner ready.</span></div>
+          <div class="log-line"><span class="log-time">[23:41:03]</span> <span class="log-source">GitHub</span> <span class="log-msg-info">Connected (demo mode).</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- Upload / Connect Repository Modal -->
+<div class="modal fade" id="uploadRepoModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content bg-white border-0 shadow-lg" style="border-radius: 16px;">
+      <div class="modal-header border-bottom py-3 px-4">
+        <h6 class="modal-title fw-bold text-dark">
+          <i class="fa-solid fa-cloud-arrow-up text-success me-2"></i>Upload or Connect Repository
+        </h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4">
+        
+        <!-- Nav Tabs -->
+        <ul class="nav nav-pills nav-fill mb-3" id="repoUploadTabs">
+          <li class="nav-item">
+            <button class="nav-link active btn-sm" data-bs-toggle="tab" data-bs-target="#tabZipUpload">Upload .ZIP Archive</button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link btn-sm" data-bs-toggle="tab" data-bs-target="#tabLocalFolder">Local Path / Git URL</button>
+          </li>
+        </ul>
+
+        <div class="tab-content">
+          <!-- Tab 1: ZIP Upload -->
+          <div class="tab-pane fade show active" id="tabZipUpload">
+            <div class="dropzone-box-clean mb-3" id="dropzoneBox" onclick="document.getElementById('zipFileInput').click()">
+              <i class="fa-solid fa-file-zipper fs-2 text-muted mb-2"></i>
+              <div class="fw-semibold small text-dark" id="zipFileLabel">Click or drag & drop project .zip here</div>
+              <div class="text-muted small">Supports Python, Node.js, Java, and Go repositories</div>
+              <input type="file" id="zipFileInput" accept=".zip" class="d-none" onchange="handleFileSelected(this)">
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label text-secondary small fw-medium">Repository Name</label>
+              <input type="text" id="uploadRepoName" class="form-control form-control-sm" placeholder="e.g. my-flask-service">
+            </div>
+
+            <button type="button" class="btn btn-devflow-green w-100 btn-sm" id="btnUploadZip" onclick="submitZipUpload()">
+              <i class="fa-solid fa-cloud-arrow-up me-1"></i> Upload & Auto-Index RAG
+            </button>
+          </div>
+
+          <!-- Tab 2: Local / Git URL -->
+          <div class="tab-pane fade" id="tabLocalFolder">
+            <div class="mb-3">
+              <label class="form-label text-secondary small fw-medium">Repository Name</label>
+              <input type="text" id="connectRepoName" class="form-control form-control-sm" placeholder="e.g. auth-microservice">
+            </div>
+            <div class="mb-3">
+              <label class="form-label text-secondary small fw-medium">Local Directory Path or Git URL</label>
+              <input type="text" id="connectRepoPath" class="form-control form-control-sm" placeholder="e.g. C:\projects\my-app or https://github.com/org/repo">
+            </div>
+            <button type="button" class="btn btn-devflow-outline w-100 btn-sm" onclick="submitConnectRepoForm()">
+              <i class="fa-solid fa-link me-1"></i> Connect & Index
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_prefix|default('') }}/static/js/dashboard.js"></script>
+<script src="{{ url_prefix|default('') }}/static/js/repository.js"></script>
+<script>
+function setPrompt(text) {
+  document.getElementById('taskInput').value = text;
+}
+</script>
+{% endblock %}
